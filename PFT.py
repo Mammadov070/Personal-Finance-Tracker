@@ -1,99 +1,225 @@
 import tkinter as tk
+from tkinter import Toplevel, Label, Entry, Button, Radiobutton, StringVar, OptionMenu, messagebox
+import matplotlib.pyplot as plt
+import pandas as pd
 import random
-from datetime import datetime
-
-class PersonalFinanceTrackerApp:
-    def __init__(self, master):
-        self.master = master
-        self.master.geometry("300x400")
-        self.master.title("Personal Finance Tracker")
-        self.transactions = []
-
-        self.greeting = tk.Label(master, text="Welcome To Personal Finance Tracker", font=("calibri", 14))
-        self.greeting.pack()
-
-        self.username_label = tk.Label(master, text="Username", font=("calibri", 14))
-        self.username_label.pack()
-
-        self.password_label = tk.Label(master, text="Password", font=("calibri", 14))
-        self.password_label.pack()
-
-        self.user_entry = tk.Entry(master, font=("calibri", 14))
-        self.user_entry.pack()
-
-        self.pass_entry = tk.Entry(master, show="*", font=("calibri", 14))
-        self.pass_entry.pack()
-
-        self.button = tk.Button(text="Enter", width=5, height=1, bg="white", fg="black", command=self.open_pft_window)
-        self.button.pack()
-
-    def open_pft_window(self):
-        pft_window = tk.Toplevel(self.master)
-        pft_app = PersonalFinanceTrackerAppWindow(pft_window, self)
-
-    def add_transaction_window(self):
-        add_transaction_window = tk.Toplevel(self.master)
-        add_transaction_window.title("Add Transaction")
-
-        tk.Label(add_transaction_window, text="Transaction Type:").grid(row=0, column=0)
-        transaction_type_var = tk.StringVar(add_transaction_window, value="Income")
-        tk.Radiobutton(add_transaction_window, text="Income", variable=transaction_type_var, value="Income").grid(row=0, column=1)
-        tk.Radiobutton(add_transaction_window, text="Expense", variable=transaction_type_var, value="Expense").grid(row=0, column=2)
-
-        tk.Label(add_transaction_window, text="Amount:").grid(row=1, column=0)
-        amount_entry = tk.Entry(add_transaction_window)
-        amount_entry.grid(row=1, column=1)
-
-        tk.Label(add_transaction_window, text="Category:").grid(row=2, column=0)
-        category_entry = tk.Entry(add_transaction_window)
-        category_entry.grid(row=2, column=1)
-
-        tk.Label(add_transaction_window, text="Date (YYYY-MM-DD):").grid(row=3, column=0)
-        date_entry = tk.Entry(add_transaction_window)
-        date_entry.grid(row=3, column=1)
-
-        tk.Label(add_transaction_window, text="Payee/Source:").grid(row=4, column=0)
-        payee_entry = tk.Entry(add_transaction_window)
-        payee_entry.grid(row=4, column=1)
-
-        add_button = tk.Button(add_transaction_window, text="Add", command=lambda: self.add_transaction(
-            transaction_type_var.get(), amount_entry.get(), category_entry.get(), date_entry.get(), payee_entry.get()))
-        add_button.grid(row=5, column=1)
-
-    def add_transaction(self, transaction_type, amount, category, date, payee):
-        transaction_id = random.randint(1000, 9999)
-
-        self.transactions.append({
-            "id": transaction_id,
-            "type": transaction_type,
-            "amount": amount,
-            "category": category,
-            "date": date,
-            "payee": payee
-        })
-
-        self.update_main_window()
-
-    def update_main_window(self):
-        print("Transactions:")
-        for transaction in self.transactions:
-            print(transaction)
 
 
-class PersonalFinanceTrackerAppWindow:
-    def __init__(self, master, pft_app):
-        self.master = master
-        self.pft_app = pft_app
+transactions = []
+account_balance = 0
+transaction_type_var = None
+category_var = None
+amount_entry = None
+date_entry = None
+payee_source_entry = None
+id_entry = None
 
-        tk.Button(master, text="Add Transaction", command=self.pft_app.add_transaction_window).pack(pady=10)
+main_window = tk.Tk()
+main_window.title("Personal Finance Tracker")
+main_window.geometry("800x600")
 
+name_label = Label(main_window, text="", font=("Calibri", 14))
+name_label.pack(pady=5)
 
-def main():
-    root = tk.Tk()
-    app = PersonalFinanceTrackerApp(root)
-    root.mainloop()
+money_label = Label(main_window, text="Balance: " + str(account_balance), font=("Calibri", 14))
+money_label.pack(pady=2)
 
-if __name__ == "__main__":
-    main()
+def prompt_user_name():
+    return input("What is your name?")
 
+def update_greeting(name):  
+    name_label.config(text=f"Hello {name}, Welcome to your PFT")
 
+def update_account_balance():
+    money_label.config(text=f"Balance: ${account_balance:.2f}")
+
+def add_transaction():
+    global account_balance
+    transaction_id = random.randint(1000, 9999)  
+    transaction_type = transaction_type_var.get()
+    amount = float(amount_entry.get()) if amount_entry.get() else 0
+    category = category_var.get()
+    date = date_entry.get()
+    payee_source = payee_source_entry.get()
+    
+    if not amount or not date:
+        messagebox.showerror("Error", "Please enter amount and date.")
+        return
+    
+    transaction = {
+        "ID": transaction_id,
+        "type": transaction_type,
+        "category": category,
+        "amount": amount,
+        "date": date,
+        "payee_source": payee_source
+    }
+    transactions.append(transaction)
+
+    if transaction_type == "income":
+        account_balance += amount
+    else:  
+        account_balance -= amount
+
+    update_account_balance()  
+    messagebox.showinfo("Success", "Transaction added successfully.")
+    add_trans_window.destroy()
+
+def open_add_transaction_window():
+    global add_trans_window, transaction_type_var, category_var, amount_entry, date_entry, payee_source_entry
+
+    add_trans_window = Toplevel(main_window)
+    add_trans_window.title("Add new transaction")
+    add_trans_window.geometry("400x300")
+
+    transaction_type_label = Label(add_trans_window, text="Transaction Type", font=("Calibri", 14))
+    transaction_type_label.grid(row=0, column=0)
+
+    transaction_type_var = StringVar(value="income")
+    Radiobutton(add_trans_window, text="Income", variable=transaction_type_var, value="income", command=update_categories).grid(row=0, column=1)
+    Radiobutton(add_trans_window, text="Expense", variable=transaction_type_var, value="expense", command=update_categories).grid(row=0, column=2)
+
+    category_label = Label(add_trans_window, text="Category", font=("Calibri", 14))
+    category_label.grid(row=1, column=0)
+
+    categories = {"income": ["Salary", "Pension", "Interest", "Others"],
+                  "expense": ["Food", "Rent", "Clothing", "Car", "Health", "Others"]}
+    category_var = StringVar(add_trans_window, value=categories["income"][0])  
+    if transaction_type_var.get() == "expense":
+        category_var.set(categories["expense"][0]) 
+    category_option = OptionMenu(add_trans_window, category_var, *categories["income"])  
+    
+    category_option.grid(row=1, column=1)
+
+    amount_label = Label(add_trans_window, text="Amount", font=("Calibri", 14))
+    amount_label.grid(row=2, column=0)
+    amount_entry = Entry(add_trans_window)
+    amount_entry.grid(row=2, column=1)
+
+    date_label = Label(add_trans_window, text="Date (YYYY-MM-DD)", font=("Calibri", 14))
+    date_label.grid(row=3, column=0)
+    date_entry = Entry(add_trans_window)
+    date_entry.grid(row=3, column=1)
+
+    payee_source_label = Label(add_trans_window, text="Payee/Source", font=("Calibri", 14))
+    payee_source_label.grid(row=4, column=0)
+    payee_source_entry = Entry(add_trans_window)
+    payee_source_entry.grid(row=4, column=1)
+
+    submit_button = Button(add_trans_window, text="Submit", font=("Calibri", 14), command=add_transaction)
+    submit_button.grid(row=5, column=1)
+
+def update_categories():
+    categories = {"income": ["Salary", "Pension", "Interest", "Others"],
+                  "expense": ["Food", "Rent", "Clothing", "Car", "Health", "Others"]}
+    category_menu = category_var['menu']
+    category_menu.delete(0, 'end')
+
+    for category in categories[transaction_type_var.get()]:
+        category_menu.add_command(label=category, command=lambda value=category: category_var.set(value))
+    category_var.set(categories[transaction_type_var.get()][0])
+
+def see_transactions():
+    trans_window = Toplevel(main_window)
+    trans_window.title("List of transactions")
+
+    trans_label = Label(trans_window, text=organise_trans(), font=("Calibri", 14))
+    trans_label.pack()
+def visualize_bar_chart(transactions):
+
+    df = pd.DataFrame(transactions)  
+
+    grouped_data = df.groupby('category')['amount'].sum()
+    
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(grouped_data.index, grouped_data.values, color='skyblue')
+    plt.xlabel('Category')
+    plt.ylabel('Amount ($)')
+    plt.title('Bar Chart: Expenses by Category')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+
+def visualize_pie_chart(transactions):
+    df = pd.DataFrame(transactions)
+    grouped_data = df.groupby('category')['amount'].sum()
+    
+
+    plt.figure(figsize=(8, 8))
+    plt.pie(grouped_data, labels=grouped_data.index, autopct='%1.1f%%', startangle=140)
+    plt.title('Pie Chart: Expenses by Category')
+    plt.axis('equal')  
+    plt.tight_layout()
+    plt.show()
+bar_chart_button = Button(main_window, text="Visualize Bar Chart", command=lambda: visualize_bar_chart(transactions))
+bar_chart_button.pack()
+
+pie_chart_button = Button(main_window, text="Visualize Pie Chart", command=lambda: visualize_pie_chart(transactions))
+pie_chart_button.pack()
+
+def organise_trans():
+    out = ""
+    for item in transactions:
+        out += str(item)
+        out += "\n"
+
+    return out
+
+def delete_transaction():
+    global account_balance
+    transaction_id = int(id_entry.get())
+    for transaction in transactions:
+        if transaction['ID'] == transaction_id:
+            if transaction['type'] == "income":
+                account_balance -= transaction['amount']
+            else:
+                account_balance += transaction['amount']
+            transactions.remove(transaction)
+            update_account_balance()
+            messagebox.showinfo("Success", "Transaction deleted successfully.")
+            delete_trans_window.destroy()
+            return
+
+    messagebox.showerror("Error", "Transaction ID not found.")
+
+def open_delete_transaction_window():
+    global delete_trans_window, id_entry
+
+    delete_trans_window = Toplevel(main_window)
+    delete_trans_window.title("Delete Transaction")
+    delete_trans_window.geometry("300x100")
+
+    id_label = Label(delete_trans_window, text="Enter Transaction ID:", font=("Calibri", 14))
+    id_label.pack()
+
+    id_entry = Entry(delete_trans_window)
+    id_entry.pack(pady=5)
+
+    delete_trans_button = Button(delete_trans_window, text="Delete Transaction", font=("Calibri", 14), command=delete_transaction)
+    delete_trans_button.pack(pady=5)
+
+name_w = tk.Toplevel()
+name_w.title("")
+name_w.geometry("400x150")
+
+name_entry = Entry(name_w)
+name_entry.pack(pady=10)
+
+def get_name():
+    update_greeting(name_entry.get())
+    name_w.destroy()
+
+submit_btn = Button(name_w, text="Submit", font=("Calibri", 14), command=get_name)
+submit_btn.pack(pady=5)
+
+add_trans_btn = Button(main_window, text="Add new transaction", font=("Calibri", 14), command=open_add_transaction_window)
+add_trans_btn.pack(pady=4)
+
+see_trans_btn = Button(main_window, text="See transactions", font=("Calibri", 14), command=see_transactions)
+see_trans_btn.pack(pady=2)
+
+delete_trans_btn = Button(main_window, text="Delete Transaction", font=("Calibri", 14), command=open_delete_transaction_window)
+delete_trans_btn.pack(pady=2)
+
+main_window.mainloop()
