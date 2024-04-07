@@ -1,9 +1,8 @@
 import tkinter as tk
 from tkinter import Toplevel, Label, Entry, Button, Radiobutton, StringVar, OptionMenu, messagebox
+import random
 import matplotlib.pyplot as plt
 import pandas as pd
-import random
-
 
 transactions = []
 account_balance = 0
@@ -125,37 +124,37 @@ def see_transactions():
 
     trans_label = Label(trans_window, text=organise_trans(), font=("Calibri", 14))
     trans_label.pack()
-def visualize_bar_chart(transactions):
+
+def visualize_bar_chart():
+    global transactions
 
     df = pd.DataFrame(transactions)  
+    grouped_data = df.groupby('type')['amount'].sum()
 
-    grouped_data = df.groupby('category')['amount'].sum()
-    
-
-    plt.figure(figsize=(10, 6))
-    plt.bar(grouped_data.index, grouped_data.values, color='skyblue')
-    plt.xlabel('Category')
-    plt.ylabel('Amount ($)')
-    plt.title('Bar Chart: Expenses by Category')
-    plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
+    plt.figure(figsize=(8, 6))
+    plt.bar(grouped_data.index, grouped_data.values, color=['blue', 'orange'])
+    plt.xlabel('Transaction Type')
+    plt.ylabel('Total Amount ($)')
+    plt.title('Bar Chart: Total Income vs Total Expenses')
     plt.show()
 
-def visualize_pie_chart(transactions):
+def visualize_pie_chart():
+    global transactions
+
     df = pd.DataFrame(transactions)
-    grouped_data = df.groupby('category')['amount'].sum()
-    
+    grouped_data = df.groupby('type')['amount'].sum()
 
     plt.figure(figsize=(8, 8))
     plt.pie(grouped_data, labels=grouped_data.index, autopct='%1.1f%%', startangle=140)
-    plt.title('Pie Chart: Expenses by Category')
-    plt.axis('equal')  
+    plt.title('Pie Chart: Total Income vs Total Expenses')
+    plt.axis('equal')
     plt.tight_layout()
     plt.show()
-bar_chart_button = Button(main_window, text="Visualize Bar Chart", command=lambda: visualize_bar_chart(transactions))
+
+bar_chart_button = Button(main_window, text="Visualize Bar Chart", command=visualize_bar_chart)
 bar_chart_button.pack()
 
-pie_chart_button = Button(main_window, text="Visualize Pie Chart", command=lambda: visualize_pie_chart(transactions))
+pie_chart_button = Button(main_window, text="Visualize Pie Chart", command=visualize_pie_chart)
 pie_chart_button.pack()
 
 def organise_trans():
