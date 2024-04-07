@@ -86,7 +86,7 @@ def open_add_transaction_window():
     category_var = StringVar(add_trans_window, value=categories["income"][0])  
     if transaction_type_var.get() == "expense":
         category_var.set(categories["expense"][0]) 
-    category_option = OptionMenu(add_trans_window, category_var, *categories["income"])  
+    category_option = OptionMenu(add_trans_window, category_var, *categories["income"] + categories["expense"])  
     
     category_option.grid(row=1, column=1)
 
