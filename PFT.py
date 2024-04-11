@@ -15,6 +15,7 @@ date_entry = None
 payee_source_entry = None
 id_entry = None
 
+#Main window of PFT
 main_window = tk.Tk()
 main_window.title("Personal Finance Tracker")
 main_window.geometry("800x600")
@@ -27,16 +28,16 @@ money_label.pack(pady=2)
 
 transactions_summary_label = None
 
-
+# Function for ask user's name.
 def prompt_user_name():
     return input("What is your name?")
-
+# Function to greeting with your name
 def update_greeting(name):  
     name_label.config(text=f"Hello {name}, Welcome to your PFT")
-
+# Function to update balance on main window
 def update_account_balance():
     money_label.config(text=f"Balance: ${account_balance:.2f}")
-
+# Function to add a transaction
 def add_transaction():
     global account_balance
     transaction_id = random.randint(1000, 9999)  
@@ -59,16 +60,17 @@ def add_transaction():
         "payee_source": payee_source
     }
     transactions.append(transaction)
-
+# Update account balance
     if transaction_type == "income":
         account_balance += amount
     else:  
         account_balance -= amount
+# Refresh the summary
     update_transactions_summary()
     update_account_balance()  
     messagebox.showinfo("Success", "Transaction added successfully.")
     add_trans_window.destroy()
-    
+# Initialize and update the transactions summary display.    
 def init_transactions_summary():
     global transactions_summary_label
     transactions_summary_label = Label(main_window, text="", font=("Calibri", 12))
@@ -82,7 +84,7 @@ def update_transactions_summary():
     for transaction in transactions[-5:]:
         summary_text += f"ID: {transaction['ID']}, Type: {transaction['type']}, Amount: ${transaction['amount']:.2f}, Date: {transaction['date']}\n"
     transactions_summary_label.config(text=summary_text)
-
+# Function to open a new window for adding transactions.
 def open_add_transaction_window():
     global add_trans_window, transaction_type_var, category_var, amount_entry, date_entry, payee_source_entry
 
@@ -126,7 +128,7 @@ def open_add_transaction_window():
 
     submit_button = Button(add_trans_window, text="Submit", font=("Calibri", 14), command=add_transaction)
     submit_button.grid(row=5, column=1)
-
+# Function to choose categoires of income or expense.
 def update_categories():
     categories = {"income": ["Salary", "Pension", "Interest", "Others"],
                   "expense": ["Food", "Rent", "Clothing", "Car", "Health", "Others"]}
@@ -143,7 +145,7 @@ def see_transactions():
 
     trans_label = Label(trans_window, text=organise_trans(), font=("Calibri", 14))
     trans_label.pack()
-
+# Functions to visualize transactions data as bar or pie charts.
 def visualize_bar_chart():
     global transactions
 
@@ -228,7 +230,7 @@ name_entry.pack(pady=10)
 def get_name():
     update_greeting(name_entry.get())
     name_w.destroy()
- 
+# Function to save txt file
 def save_transactions_to_file():
     filename = 'transactions_' + time.strftime("%Y%m%d-%H%M%S") + '.txt'
     with open(filename, 'w') as file:
@@ -239,13 +241,12 @@ def save_transactions_to_file():
 
    
     
-
+# Function to filter transactions by their date or category.
 def filter_transactions():
     filter_window = Toplevel(main_window)
     filter_window.title("Filter Transactions")
     filter_window.geometry("300x250")
 
-    # Define local functions within `filter_transactions` for encapsulation
     def apply_filters():
         start_date = start_date_entry.get()
         end_date = end_date_entry.get()
@@ -278,7 +279,7 @@ def filter_transactions():
         info = "\n".join(f"ID: {t['ID']}, Type: {t['type']}, Amount: {t['amount']}, Date: {t['date']}, Category: {t['category']}" for t in filtered_transactions)
         messagebox.showinfo("Filtered Transactions", info if info else "No transactions found.")
 
-    # UI for filtering
+    # Labels for filtering
     Label(filter_window, text="Start Date (YYYY-MM-DD):").grid(row=0, column=0)
     start_date_entry = Entry(filter_window)
     start_date_entry.grid(row=0, column=1)
