@@ -1,0 +1,2 @@
+ID: 9085, Type: income, Category: Salary, Amount: 12500.0, Date: 2020-10-20, Payee/Source: Bank
+ID: 5755, Type: expense, Category: Clothing, Amount: 2500.0, Date: 2022-10-12, Payee/Source: Bank

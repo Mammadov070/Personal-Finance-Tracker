@@ -4,6 +4,7 @@ import random
 import matplotlib.pyplot as plt
 import pandas as pd
 import datetime  
+import time 
 
 transactions = []
 account_balance = 0
@@ -23,6 +24,9 @@ name_label.pack(pady=5)
 
 money_label = Label(main_window, text="Balance: " + str(account_balance), font=("Calibri", 14))
 money_label.pack(pady=2)
+
+transactions_summary_label = None
+
 
 def prompt_user_name():
     return input("What is your name?")
@@ -60,10 +64,24 @@ def add_transaction():
         account_balance += amount
     else:  
         account_balance -= amount
-
+    update_transactions_summary()
     update_account_balance()  
     messagebox.showinfo("Success", "Transaction added successfully.")
     add_trans_window.destroy()
+    
+def init_transactions_summary():
+    global transactions_summary_label
+    transactions_summary_label = Label(main_window, text="", font=("Calibri", 12))
+    transactions_summary_label.pack(pady=5)
+    update_transactions_summary()
+    
+def update_transactions_summary():
+    global transactions_summary_label, transactions
+    summary_text = "Last transactions:\n"
+    # Display the last 5 transactions, or fewer if there aren't 5
+    for transaction in transactions[-5:]:
+        summary_text += f"ID: {transaction['ID']}, Type: {transaction['type']}, Amount: ${transaction['amount']:.2f}, Date: {transaction['date']}\n"
+    transactions_summary_label.config(text=summary_text)
 
 def open_add_transaction_window():
     global add_trans_window, transaction_type_var, category_var, amount_entry, date_entry, payee_source_entry
@@ -180,6 +198,7 @@ def delete_transaction():
             messagebox.showinfo("Success", "Transaction deleted successfully.")
             delete_trans_window.destroy()
             return
+    update_transactions_summary()
 
     messagebox.showerror("Error", "Transaction ID not found.")
 
@@ -209,7 +228,18 @@ name_entry.pack(pady=10)
 def get_name():
     update_greeting(name_entry.get())
     name_w.destroy()
+ 
+def save_transactions_to_file():
+    filename = 'transactions_' + time.strftime("%Y%m%d-%H%M%S") + '.txt'
+    with open(filename, 'w') as file:
+        for transaction in transactions:
+            line = f"ID: {transaction['ID']}, Type: {transaction['type']}, Category: {transaction['category']}, Amount: {transaction['amount']}, Date: {transaction['date']}, Payee/Source: {transaction['payee_source']}\n"
+            file.write(line)
+    messagebox.showinfo("Success", f"Transactions saved to {filename}.")
+
+   
     
+
 def filter_transactions():
     filter_window = Toplevel(main_window)
     filter_window.title("Filter Transactions")
@@ -283,6 +313,12 @@ see_trans_btn.pack(pady=2)
 
 delete_trans_btn = Button(main_window, text="Delete Transaction", font=("Calibri", 14), command=open_delete_transaction_window)
 delete_trans_btn.pack(pady=2)
+
+save_trans_btn = Button(main_window, text="Save Transactions", font=("Calibri", 14), command=save_transactions_to_file)
+save_trans_btn.pack(pady=2)
+
+
+init_transactions_summary()
 
 
 main_window.mainloop()
