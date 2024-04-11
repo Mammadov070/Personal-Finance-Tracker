@@ -3,6 +3,7 @@ from tkinter import Toplevel, Label, Entry, Button, Radiobutton, StringVar, Opti
 import random
 import matplotlib.pyplot as plt
 import pandas as pd
+import datetime  
 
 transactions = []
 account_balance = 0
@@ -208,6 +209,68 @@ name_entry.pack(pady=10)
 def get_name():
     update_greeting(name_entry.get())
     name_w.destroy()
+    
+def filter_transactions():
+    filter_window = Toplevel(main_window)
+    filter_window.title("Filter Transactions")
+    filter_window.geometry("300x250")
+
+    # Define local functions within `filter_transactions` for encapsulation
+    def apply_filters():
+        start_date = start_date_entry.get()
+        end_date = end_date_entry.get()
+        t_type = transaction_type_var_filter.get()
+        category = category_var_filter.get()
+
+        filtered = transactions
+        if start_date and end_date:
+            filtered = filter_transactions_by_time(filtered, start_date, end_date)
+        if t_type != "all":
+            filtered = filter_transactions_by_type(filtered, t_type)
+        if category != "All":
+            filtered = filter_transactions_by_category(filtered, category)
+
+        display_filtered_transactions(filtered)
+
+    # Local function definitions
+    def filter_transactions_by_time(transactions, start_date, end_date):
+        start = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        return [t for t in transactions if start <= datetime.datetime.strptime(t['date'], "%Y-%m-%d") <= end]
+
+    def filter_transactions_by_type(transactions, t_type):
+        return [t for t in transactions if t['type'] == t_type]
+
+    def filter_transactions_by_category(transactions, category):
+        return [t for t in transactions if t['category'] == category]
+
+    def display_filtered_transactions(filtered_transactions):
+        info = "\n".join(f"ID: {t['ID']}, Type: {t['type']}, Amount: {t['amount']}, Date: {t['date']}, Category: {t['category']}" for t in filtered_transactions)
+        messagebox.showinfo("Filtered Transactions", info if info else "No transactions found.")
+
+    # UI for filtering
+    Label(filter_window, text="Start Date (YYYY-MM-DD):").grid(row=0, column=0)
+    start_date_entry = Entry(filter_window)
+    start_date_entry.grid(row=0, column=1)
+
+    Label(filter_window, text="End Date (YYYY-MM-DD):").grid(row=1, column=0)
+    end_date_entry = Entry(filter_window)
+    end_date_entry.grid(row=1, column=1)
+
+    transaction_type_var_filter = StringVar(value="all")
+    Radiobutton(filter_window, text="All", variable=transaction_type_var_filter, value="all").grid(row=2, column=0)
+    Radiobutton(filter_window, text="Income", variable=transaction_type_var_filter, value="income").grid(row=2, column=1)
+    Radiobutton(filter_window, text="Expense", variable=transaction_type_var_filter, value="expense").grid(row=2, column=2)
+
+    category_var_filter = StringVar(value="All")
+    categories = ["All", "Salary", "Pension", "Interest", "Food", "Rent", "Clothing", "Car", "Health", "Others"]
+    OptionMenu(filter_window, category_var_filter, *categories).grid(row=3, column=1)
+
+    Button(filter_window, text="Apply Filters", command=apply_filters).grid(row=4, column=1)
+
+# Button to open the filter window
+Button(main_window, text="Filter Transactions", command=filter_transactions).pack()
+
 
 submit_btn = Button(name_w, text="Submit", font=("Calibri", 14), command=get_name)
 submit_btn.pack(pady=5)
@@ -220,5 +283,6 @@ see_trans_btn.pack(pady=2)
 
 delete_trans_btn = Button(main_window, text="Delete Transaction", font=("Calibri", 14), command=open_delete_transaction_window)
 delete_trans_btn.pack(pady=2)
+
 
 main_window.mainloop()
